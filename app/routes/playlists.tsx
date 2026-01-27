@@ -1,19 +1,15 @@
 import * as React from "react";
 import type { Route } from "./+types/playlists";
-
-type Track = {
-  id: string;
-  title: string;
-  artist_name: string;
-  cover_url: string;   // e.g. "/images/artists/steven-cooper.jpg"
-  duration: string;    // e.g. "02:17"
-};
+import type { Track } from "../types/Track";
+import { PlaylistTrack, type PlaylistTrackProps } from "../components/PlaylistTrack";
+import { Playlist } from "../components/Playlist";
+import type { JSX } from "react/jsx-runtime";
 
 type Playlist = {
   id: string;
   name: string;
-  cover_url: string;   // e.g. "/images/playlists/bass-house.jpg"
-  tracks: Track[];
+  art_work_url: string;
+  tracks: Track;
 };
 
 type PlaylistsResponse = {
@@ -29,14 +25,8 @@ export function meta({ }: Route.MetaArgs) {
   ];
 }
 
-function joinUrl(base: string, path: string) {
-  if (!path) return "";
-  if (path.startsWith("http")) return path;
-  return `${base.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
-}
-
 export default function PlaylistsRoute() {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   const [data, setData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -116,33 +106,15 @@ export default function PlaylistsRoute() {
                   <p className="mt-4 text-sm text-gray-500">No matches.</p>
                 ) : (
                   <ul className="mt-4 space-y-2">
-                    {playlists.map((p) => {
-                      const active = p.id === selectedPlaylistId;
+                    {playlists.map((playlist) => {
+                      const active = playlist.id === selectedPlaylistId;
                       return (
-                        <li key={p.id}>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPlaylistId(p.id)}
-                            className={[
-                              "w-full rounded-2xl px-3 py-3 text-left transition",
-                              "flex items-center gap-3",
-                              active
-                                ? "bg-white shadow-sm ring-1 ring-gray-200"
-                                : "hover:bg-white/70",
-                            ].join(" ")}
-                          >
-                            <div className="h-10 w-10 overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
-                              {p.cover_url ? (
-                                <img
-                                  src={joinUrl(API_BASE, p.cover_url)}
-                                  alt={p.name}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : null}
-                            </div>
-                            <span className="font-medium text-gray-900">{p.name}</span>
-                          </button>
-                        </li>
+                        <Playlist
+                          {...playlist}
+                          key={playlist.id}
+                          active={active}
+                          onClick={(id) => setSelectedPlaylistId(id)}
+                        />
                       );
                     })}
                   </ul>
@@ -186,35 +158,8 @@ export default function PlaylistsRoute() {
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  selected.tracks.map((t) => (
-                    <div
-                      key={t.id}
-                      className="grid grid-cols-12 items-center rounded-2xl bg-gray-50 px-3 py-3"
-                    >
-                      <div className="col-span-7 flex items-center gap-3">
-                        <div className="h-10 w-10 overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
-                          {t.cover_url ? (
-                            <img
-                              src={joinUrl(API_BASE, t.cover_url)}
-                              alt={t.artist_name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : null}
-                        </div>
-
-                        <p className="min-w-0 truncate font-medium text-gray-900">
-                          {t.title}
-                        </p>
-                      </div>
-
-                      <div className="col-span-3 truncate text-sm text-gray-700">
-                        {t.artist_name}
-                      </div>
-
-                      <div className="col-span-2 text-right text-sm text-gray-700">
-                        {t.duration}
-                      </div>
-                    </div>
+                  selected.tracks.map((track: JSX.IntrinsicAttributes & PlaylistTrackProps) => (
+                    <PlaylistTrack {...track} key={track.id} />
                   ))
                 )}
               </div>
