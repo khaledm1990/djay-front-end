@@ -1,21 +1,11 @@
 import * as React from "react";
 import type { Route } from "./+types/playlists";
-import type { Track } from "../types/Track";
-import { PlaylistTrack, type PlaylistTrackProps } from "../components/PlaylistTrack";
-import { Playlist } from "../components/Playlist";
-import type { JSX } from "react/jsx-runtime";
-
-type Playlist = {
-  id: string;
-  name: string;
-  art_work_url: string;
-  tracks: Track;
-};
+import type { PlaylistType } from "../types/PlaylistType";
+import { PlaylistTrackComponent } from "../components/PlaylistTrackComponent";
+import { PlaylistComponent } from "../components/PlaylistComponent";
 
 type PlaylistsResponse = {
-  total_count_text: string;
-  total_duration_text: string;
-  playlists: Playlist[];
+  playlists: PlaylistType[];
 };
 
 export function meta({ }: Route.MetaArgs) {
@@ -26,8 +16,28 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function PlaylistsRoute() {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [activeTrackId, setActiveTrackId] = React.useState<string | null>(null);
+  const [activeUrl, setActiveUrl] = React.useState<string | null>(null);
+
+  const handlePlay = React.useCallback((t: { id: string; audio_url: string }) => {
+    setActiveTrackId(t.id);
+    setActiveUrl(t.audio_url);
+  }, []);
+
+  React.useEffect(() => {
+    const el = audioRef.current;
+    if (!el || !activeUrl) return;
+
+    el.src = activeUrl;
+    el.load();
+    el.play().catch(() => {
+      // If the browser blocks autoplay for any reason, user can press play on controls.
+    });
+  }, [activeUrl]);
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const [data, setData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
@@ -107,12 +117,12 @@ export default function PlaylistsRoute() {
                 ) : (
                   <ul className="mt-4 space-y-2">
                     {playlists.map((playlist) => {
-                      const active = playlist.id === selectedPlaylistId;
+                      const is_active = playlist.id === selectedPlaylistId;
                       return (
-                        <Playlist
+                        <PlaylistComponent
                           {...playlist}
                           key={playlist.id}
-                          active={active}
+                          is_active={is_active}
                           onClick={(id) => setSelectedPlaylistId(id)}
                         />
                       );
@@ -134,9 +144,9 @@ export default function PlaylistsRoute() {
 
                   {data ? (
                     <>
-                      <p className="text-sm text-gray-500">{data.total_count_text}</p>
+                      <p className="text-sm text-gray-500">{selected?.total_count_text}</p>
                       <span className="text-gray-300">|</span>
-                      <p className="text-sm text-gray-500">{data.total_duration_text}</p>
+                      <p className="text-sm text-gray-500">{selected?.total_duration_text}</p>
                     </>
                   ) : null}
                 </div>
@@ -158,8 +168,12 @@ export default function PlaylistsRoute() {
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  selected.tracks.map((track: JSX.IntrinsicAttributes & PlaylistTrackProps) => (
-                    <PlaylistTrack {...track} key={track.id} />
+                  selected.tracks.map((track) => (
+                    <PlaylistTrackComponent {...track}
+                      key={track.id}
+                      is_active={track.id === activeTrackId}
+                      onPlay={handlePlay}
+                    />
                   ))
                 )}
               </div>

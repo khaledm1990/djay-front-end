@@ -2,11 +2,11 @@ export type PlaylistProps = {
   id: string;
   name: string;
   art_work_url: string;
-  active: boolean;
+  is_active: boolean;
   onClick: (id: string) => void;
 };
 
-export function Playlist({ id, name, art_work_url, active, onClick }: PlaylistProps) {
+export function PlaylistComponent({ id, name, art_work_url, is_active, onClick }: PlaylistProps) {
   return (
     <li>
       <button
@@ -15,7 +15,7 @@ export function Playlist({ id, name, art_work_url, active, onClick }: PlaylistPr
         className={[
           "w-full rounded-2xl px-3 py-3 text-left transition",
           "flex items-center gap-3",
-          active
+          is_active
             ? "bg-white shadow-sm ring-1 ring-gray-200"
             : "hover:bg-white/70",
         ].join(" ")}
