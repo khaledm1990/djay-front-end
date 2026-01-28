@@ -5,8 +5,6 @@ export type PlaylistTrackProps = {
   art_work_url: string;
   duration: string;
   audio_url: string;
-  is_active?: boolean;
-  onPlay?: (track: { id: string; audio_url: string }) => void;
 };
 
 export function PlaylistTrackComponent({
@@ -16,16 +14,13 @@ export function PlaylistTrackComponent({
   art_work_url,
   duration,
   audio_url,
-  is_active,
-  onPlay,
 }: PlaylistTrackProps) {
   return (
     <button
       type="button"
-      onClick={() => onPlay?.({ id, audio_url })}
       className={[
         "w-full text-left grid grid-cols-12 items-center rounded-2xl px-3 py-3",
-        is_active ? "bg-gray-100 ring-1 ring-gray-200" : "bg-gray-50 hover:bg-gray-100",
+        "bg-gray-100 ring-1 ring-gray-200",
       ].join(" ")}
     >
       <div className="col-span-7 flex items-center gap-3">

@@ -14,7 +14,7 @@ export function meta({ }: Route.MetaArgs) {
 export default function PlaylistsRoute() {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
-  const [playlists_response, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
+  const [playlistsResponseData, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
@@ -41,15 +41,15 @@ export default function PlaylistsRoute() {
   }, [API_BASE]);
 
   const playlists = React.useMemo(() => {
-    if (!playlists_response) return [];
+    if (!playlistsResponseData) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return playlists_response.playlists;
-    return playlists_response.playlists.filter((p) => p.name.toLowerCase().includes(q));
-  }, [playlists_response, query]);
+    if (!q) return playlistsResponseData.playlists;
+    return playlistsResponseData.playlists.filter((p) => p.name.toLowerCase().includes(q));
+  }, [playlistsResponseData, query]);
 
   const selected_playlist =
-    playlists_response?.playlists.find((p) => p.id === selectedPlaylistId) ??
-    playlists_response?.playlists[0] ??
+    playlistsResponseData?.playlists.find((p) => p.id === selectedPlaylistId) ??
+    playlistsResponseData?.playlists[0] ??
     null;
 
   return (
@@ -86,7 +86,7 @@ export default function PlaylistsRoute() {
               <div className="mt-8">
                 <h2 className="text-sm font-semibold text-gray-700">Playlists</h2>
 
-                {!playlists_response ? (
+                {!playlistsResponseData ? (
                   <p className="mt-4 text-sm text-gray-500">Loading…</p>
                 ) : playlists.length === 0 ? (
                   <p className="mt-4 text-sm text-gray-500">No matches.</p>
@@ -118,7 +118,7 @@ export default function PlaylistsRoute() {
                     {selected_playlist?.name ?? "Playlists"}
                   </h1>
 
-                  {playlists_response ? (
+                  {playlistsResponseData ? (
                     <>
                       <p className="text-sm text-gray-500">{selected_playlist?.tracks_count_text}</p>
                       <span className="text-gray-300">|</span>
