@@ -17,26 +17,6 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function PlaylistsRoute() {
 
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [activeTrackId, setActiveTrackId] = React.useState<string | null>(null);
-  const [activeUrl, setActiveUrl] = React.useState<string | null>(null);
-
-  const handlePlay = React.useCallback((t: { id: string; audio_url: string }) => {
-    setActiveTrackId(t.id);
-    setActiveUrl(t.audio_url);
-  }, []);
-
-  React.useEffect(() => {
-    const el = audioRef.current;
-    if (!el || !activeUrl) return;
-
-    el.src = activeUrl;
-    el.load();
-    el.play().catch(() => {
-      // If the browser blocks autoplay for any reason, user can press play on controls.
-    });
-  }, [activeUrl]);
-
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const [data, setData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -171,8 +151,6 @@ export default function PlaylistsRoute() {
                   selected_playlist.tracks.map((track) => (
                     <PlaylistTrackComponent {...track}
                       key={track.id}
-                      is_active={track.id === activeTrackId}
-                      onPlay={handlePlay}
                     />
                   ))
                 )}
