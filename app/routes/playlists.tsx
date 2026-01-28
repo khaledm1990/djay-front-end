@@ -71,7 +71,7 @@ export default function PlaylistsRoute() {
     return data.playlists.filter((p) => p.name.toLowerCase().includes(q));
   }, [data, query]);
 
-  const selected =
+  const selected_playlist =
     data?.playlists.find((p) => p.id === selectedPlaylistId) ??
     data?.playlists[0] ??
     null;
@@ -139,14 +139,14 @@ export default function PlaylistsRoute() {
               <div className="px-6 pt-4">
                 <div className="flex flex-wrap items-baseline gap-3">
                   <h1 className="text-3xl font-semibold tracking-tight">
-                    {selected?.name ?? "Playlists"}
+                    {selected_playlist?.name ?? "Playlists"}
                   </h1>
 
                   {data ? (
                     <>
-                      <p className="text-sm text-gray-500">{selected?.total_count_text}</p>
+                      <p className="text-sm text-gray-500">{selected_playlist?.tracks_count_text}</p>
                       <span className="text-gray-300">|</span>
-                      <p className="text-sm text-gray-500">{selected?.total_duration_text}</p>
+                      <p className="text-sm text-gray-500">{selected_playlist?.total_duration_text}</p>
                     </>
                   ) : null}
                 </div>
@@ -159,16 +159,16 @@ export default function PlaylistsRoute() {
               </div>
 
               <div className="mt-3 space-y-2 px-4 pb-6">
-                {!selected ? (
+                {!selected_playlist ? (
                   <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">
                     Loading…
                   </div>
-                ) : selected.tracks.length === 0 ? (
+                ) : selected_playlist.tracks.length === 0 ? (
                   <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  selected.tracks.map((track) => (
+                  selected_playlist.tracks.map((track) => (
                     <PlaylistTrackComponent {...track}
                       key={track.id}
                       is_active={track.id === activeTrackId}
