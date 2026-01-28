@@ -1,12 +1,8 @@
 import * as React from "react";
 import type { Route } from "./+types/playlists";
-import type { PlaylistType } from "../types/PlaylistType";
+import type { PlaylistsResponse } from "../types/PlaylistsResponse";
 import { PlaylistTrackComponent } from "../components/PlaylistTrackComponent";
 import { PlaylistComponent } from "../components/PlaylistComponent";
-
-type PlaylistsResponse = {
-  playlists: PlaylistType[];
-};
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -18,7 +14,7 @@ export function meta({ }: Route.MetaArgs) {
 export default function PlaylistsRoute() {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
-  const [data, setData] = React.useState<PlaylistsResponse | null>(null);
+  const [playlists_response, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
@@ -33,7 +29,7 @@ export default function PlaylistsRoute() {
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = (await res.json()) as PlaylistsResponse;
 
-        setData(json);
+        setPlaylistsData(json);
         setSelectedPlaylistId(json.playlists?.[0]?.id ?? null);
       } catch (e: any) {
         if (e?.name === "AbortError") return;
@@ -45,15 +41,15 @@ export default function PlaylistsRoute() {
   }, [API_BASE]);
 
   const playlists = React.useMemo(() => {
-    if (!data) return [];
+    if (!playlists_response) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return data.playlists;
-    return data.playlists.filter((p) => p.name.toLowerCase().includes(q));
-  }, [data, query]);
+    if (!q) return playlists_response.playlists;
+    return playlists_response.playlists.filter((p) => p.name.toLowerCase().includes(q));
+  }, [playlists_response, query]);
 
   const selected_playlist =
-    data?.playlists.find((p) => p.id === selectedPlaylistId) ??
-    data?.playlists[0] ??
+    playlists_response?.playlists.find((p) => p.id === selectedPlaylistId) ??
+    playlists_response?.playlists[0] ??
     null;
 
   return (
@@ -90,7 +86,7 @@ export default function PlaylistsRoute() {
               <div className="mt-8">
                 <h2 className="text-sm font-semibold text-gray-700">Playlists</h2>
 
-                {!data ? (
+                {!playlists_response ? (
                   <p className="mt-4 text-sm text-gray-500">Loading…</p>
                 ) : playlists.length === 0 ? (
                   <p className="mt-4 text-sm text-gray-500">No matches.</p>
@@ -122,7 +118,7 @@ export default function PlaylistsRoute() {
                     {selected_playlist?.name ?? "Playlists"}
                   </h1>
 
-                  {data ? (
+                  {playlists_response ? (
                     <>
                       <p className="text-sm text-gray-500">{selected_playlist?.tracks_count_text}</p>
                       <span className="text-gray-300">|</span>
