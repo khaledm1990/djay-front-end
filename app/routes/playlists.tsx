@@ -23,6 +23,7 @@ export default function PlaylistsRoute() {
 
 
   const [currentTrackId, setCurrentTrackId] = React.useState<string | null>(null);
+  const [currentTrack, setCurrentTrack] = React.useState<TrackType | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
 
@@ -61,11 +62,25 @@ export default function PlaylistsRoute() {
     playlists[0] ??
     null;
 
-  const currentTrack = React.useMemo(() => {
-    if (!currentTrackId) return null;
-    return selected_playlist.tracks.find((t) => t.id === currentTrackId) ?? null;
-  }, [currentTrackId]);
+  React.useEffect(() => {
+    if (!playlistsResponseData) return;
+    setCurrentTrack((prev) => prev ?? playlistsResponseData.playlists?.[0]?.tracks?.[0] ?? null);
+  }, [playlistsResponseData]);
 
+
+  const onTrackClick = (track: TrackType) => {
+    setCurrentTrack(track);
+    setCurrentTrackId(track.id);
+  };
+
+  React.useEffect(() => {
+    const el = audioRef.current;
+    if (!el || !currentTrack?.audio_url) return;
+
+    el.load();
+    const p = el.play();
+    if (p?.catch) p.catch(() => { });
+  }, [currentTrack?.audio_url]);
 
   return (
     <main className="min-h-screen bg-white">
@@ -125,7 +140,6 @@ export default function PlaylistsRoute() {
 
           {/* Content */}
           <section className="col-span-12 md:col-span-8 lg:col-span-9">
-            {/* ✅ Player row comes first */}
             <AudioPlayer
               title={currentTrack?.title}
               artist={currentTrack?.artist_name}
@@ -166,15 +180,16 @@ export default function PlaylistsRoute() {
                   </div>
                 ) : (
                   <>
-                    {/* Tracks */}
-                    {selected_playlist.tracks.map((track) => (
-                      <PlaylistTrackComponent
-                        key={track.id}
-                        {...track}
-                        isActive={track.id === currentTrackId}
-                        onRowClick={(id) => setCurrentTrackId(id)}
-                      />
-                    ))}
+                    {
+                      selected_playlist.tracks.map((track) => (
+                        <PlaylistTrackComponent
+                          key={track.id}
+                          {...track}
+                          isActive={track.id === currentTrackId}
+                          onRowClick={() => onTrackClick(track)}
+                        />
+                      ))
+                    }
                   </>
                 )}
               </div>
