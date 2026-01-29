@@ -5,6 +5,12 @@ export type PlaylistTrackProps = {
   art_work_url: string;
   duration: string;
   audio_url: string;
+
+  // NEW:
+  isActive?: boolean;
+  isPlaying?: boolean;
+  onPlayClick?: (trackId: string) => void;
+  onRowClick?: (trackId: string) => void;
 };
 
 export function PlaylistTrackComponent({
@@ -13,20 +19,35 @@ export function PlaylistTrackComponent({
   artist_name,
   art_work_url,
   duration,
-  audio_url,
+  onPlayClick,
+  onRowClick,
+  isActive,
+  isPlaying,
 }: PlaylistTrackProps) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onRowClick?.(id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onRowClick?.(id);
+      }}
       className={[
         "w-full text-left grid grid-cols-12 items-center rounded-2xl px-3 py-3",
-        "bg-gray-100 ring-1 ring-gray-200",
+        "ring-1",
+        isActive ? "bg-white ring-gray-300 shadow-sm" : "bg-gray-100 ring-gray-200 hover:bg-gray-50",
       ].join(" ")}
     >
-      <div className="col-span-7 flex items-center gap-3">
-        <div className="h-10 w-10 overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
+      {/* Left: play button + artwork + title */}
+      <div className="col-span-7 flex items-center gap-3 min-w-0">
+
+        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-gray-200">
           {art_work_url ? (
-            <img src={art_work_url} alt={artist_name} className="h-full w-full object-cover" />
+            <img
+              src={art_work_url}
+              alt={artist_name}
+              className="h-full w-full object-cover"
+            />
           ) : null}
         </div>
 
@@ -34,8 +55,7 @@ export function PlaylistTrackComponent({
       </div>
 
       <div className="col-span-3 truncate text-sm text-gray-700">{artist_name}</div>
-
       <div className="col-span-2 text-right text-sm text-gray-700">{duration}</div>
-    </button>
+    </div>
   );
 }

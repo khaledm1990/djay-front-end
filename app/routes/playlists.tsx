@@ -3,6 +3,7 @@ import type { Route } from "./+types/playlists";
 import type { PlaylistsResponse } from "../types/PlaylistsResponse";
 import { PlaylistTrackComponent } from "../components/PlaylistTrackComponent";
 import { PlaylistComponent } from "../components/PlaylistComponent";
+import { AudioPlayer } from "../components/AudioPlayer";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -18,6 +19,25 @@ export default function PlaylistsRoute() {
   const [error, setError] = React.useState<string | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
+
+
+  const [currentTrackId, setCurrentTrackId] = React.useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  React.useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    el.addEventListener("play", onPlay);
+    el.addEventListener("pause", onPause);
+
+    return () => {
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("pause", onPause);
+    };
+  }, []);
 
   React.useEffect(() => {
     const ac = new AbortController();
@@ -51,6 +71,72 @@ export default function PlaylistsRoute() {
     playlistsResponseData?.playlists.find((p) => p.id === selectedPlaylistId) ??
     playlistsResponseData?.playlists[0] ??
     null;
+
+  const currentTrack = React.useMemo(() => {
+    if (!selected_playlist || !currentTrackId) return null;
+    return selected_playlist.tracks.find((t) => t.id === currentTrackId) ?? null;
+  }, [selected_playlist, currentTrackId]);
+
+  // If playlist changes, keep currentTrackId valid
+  React.useEffect(() => {
+    if (!selected_playlist) return;
+    if (!selected_playlist.tracks.length) {
+      setCurrentTrackId(null);
+      return;
+    }
+    if (!currentTrackId || !selected_playlist.tracks.some((t) => t.id === currentTrackId)) {
+      setCurrentTrackId(selected_playlist.tracks[0].id);
+    }
+  }, [selected_playlist, currentTrackId]);
+
+  const playTrackById = React.useCallback(
+    async (trackId: string) => {
+      if (!selected_playlist) return;
+      const track = selected_playlist.tracks.find((t) => t.id === trackId);
+      if (!track) return;
+
+      const el = audioRef.current;
+      if (!el) return;
+
+      const clickedCurrent = currentTrackId === trackId;
+
+      // Toggle if same track
+      if (clickedCurrent) {
+        if (el.paused) {
+          await el.play();
+        } else {
+          el.pause();
+        }
+        return;
+      }
+
+      // New track
+      setCurrentTrackId(trackId);
+      el.src = track.audio_url;
+      el.currentTime = 0;
+      await el.play();
+    },
+    [selected_playlist, currentTrackId]
+  );
+
+  // When currentTrack changes, sync the <audio> src
+  React.useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (!currentTrack?.audio_url) return;
+
+    // Only update src if different
+    if (el.src !== currentTrack.audio_url) {
+      el.src = currentTrack.audio_url;
+      el.currentTime = 0;
+
+      // If user had been playing, keep playing
+      if (isPlaying) {
+        el.play().catch(() => { });
+      }
+    }
+  }, [currentTrack?.audio_url]); // (intentionally not including isPlaying to avoid loops)
+
 
   return (
     <main className="min-h-screen bg-white">
@@ -136,19 +222,35 @@ export default function PlaylistsRoute() {
 
               <div className="mt-3 space-y-2 px-4 pb-6">
                 {!selected_playlist ? (
-                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">
-                    Loading…
-                  </div>
+                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">Loading…</div>
                 ) : selected_playlist.tracks.length === 0 ? (
                   <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  selected_playlist.tracks.map((track) => (
-                    <PlaylistTrackComponent {...track}
-                      key={track.id}
+                  <>
+                    {/* ✅ Player row comes first */}
+                    <AudioPlayer
+                      title={currentTrack?.title}
+                      artist={currentTrack?.artist_name}
+                      artwork={currentTrack?.art_work_url}
+                      audioUrl={currentTrack?.audio_url}
+                      audioRef={audioRef as React.RefObject<HTMLAudioElement>}
                     />
-                  ))
+                    <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 mb-4 opacity-60" />
+
+                    {/* Tracks */}
+                    {selected_playlist.tracks.map((track) => (
+                      <PlaylistTrackComponent
+                        key={track.id}
+                        {...track}
+                        isActive={track.id === currentTrackId}
+                        isPlaying={isPlaying}
+                        onPlayClick={playTrackById}
+                        onRowClick={(id) => setCurrentTrackId(id)}
+                      />
+                    ))}
+                  </>
                 )}
               </div>
             </div>
