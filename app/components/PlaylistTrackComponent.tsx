@@ -25,9 +25,6 @@ export function PlaylistTrackComponent({
       role="button"
       tabIndex={0}
       onClick={() => onRowClick?.(id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onRowClick?.(id);
-      }}
       className={[
         "w-full text-left grid grid-cols-12 items-center rounded-2xl px-3 py-3",
         "ring-1",

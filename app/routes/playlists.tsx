@@ -4,6 +4,7 @@ import type { PlaylistsResponse } from "../types/PlaylistsResponse";
 import { PlaylistTrackComponent } from "../components/PlaylistTrackComponent";
 import { PlaylistComponent } from "../components/PlaylistComponent";
 import { AudioPlayer } from "../components/AudioPlayer";
+import type { TrackType } from "~/types/TrackType";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -15,8 +16,8 @@ export function meta({ }: Route.MetaArgs) {
 export default function PlaylistsRoute() {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
-  const [playlistsResponseData, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [playlistsResponseData, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
 
@@ -38,6 +39,7 @@ export default function PlaylistsRoute() {
         setPlaylistsData(json);
         setSelectedPlaylistId(json.playlists?.[0]?.id ?? null);
         setCurrentTrackId(json.playlists[0]?.tracks[0]?.id)
+        // setCurrentTrack(json.playlists[0]?.tracks[0])
       } catch (e: any) {
         if (e?.name === "AbortError") return;
         setError(e instanceof Error ? e.message : "Failed to load playlists");
@@ -55,14 +57,14 @@ export default function PlaylistsRoute() {
   }, [playlistsResponseData, query]);
 
   const selected_playlist =
-    playlistsResponseData?.playlists.find((p) => p.id === selectedPlaylistId) ??
-    playlistsResponseData?.playlists[0] ??
+    playlists.find((p) => p.id === selectedPlaylistId) ??
+    playlists[0] ??
     null;
 
   const currentTrack = React.useMemo(() => {
-    if (!selected_playlist || !currentTrackId) return null;
+    if (!currentTrackId) return null;
     return selected_playlist.tracks.find((t) => t.id === currentTrackId) ?? null;
-  }, [selected_playlist, currentTrackId]);
+  }, [currentTrackId]);
 
 
   return (
