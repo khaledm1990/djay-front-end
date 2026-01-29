@@ -22,22 +22,8 @@ export default function PlaylistsRoute() {
 
 
   const [currentTrackId, setCurrentTrackId] = React.useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  React.useEffect(() => {
-    const el = audioRef.current;
-    if (!el) return;
 
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    el.addEventListener("play", onPlay);
-    el.addEventListener("pause", onPause);
-
-    return () => {
-      el.removeEventListener("play", onPlay);
-      el.removeEventListener("pause", onPause);
-    };
-  }, []);
 
   React.useEffect(() => {
     const ac = new AbortController();
@@ -51,6 +37,7 @@ export default function PlaylistsRoute() {
 
         setPlaylistsData(json);
         setSelectedPlaylistId(json.playlists?.[0]?.id ?? null);
+        setCurrentTrackId(json.playlists[0]?.tracks[0]?.id)
       } catch (e: any) {
         if (e?.name === "AbortError") return;
         setError(e instanceof Error ? e.message : "Failed to load playlists");
@@ -76,66 +63,6 @@ export default function PlaylistsRoute() {
     if (!selected_playlist || !currentTrackId) return null;
     return selected_playlist.tracks.find((t) => t.id === currentTrackId) ?? null;
   }, [selected_playlist, currentTrackId]);
-
-  // If playlist changes, keep currentTrackId valid
-  React.useEffect(() => {
-    if (!selected_playlist) return;
-    if (!selected_playlist.tracks.length) {
-      setCurrentTrackId(null);
-      return;
-    }
-    if (!currentTrackId || !selected_playlist.tracks.some((t) => t.id === currentTrackId)) {
-      setCurrentTrackId(selected_playlist.tracks[0].id);
-    }
-  }, [selected_playlist, currentTrackId]);
-
-  const playTrackById = React.useCallback(
-    async (trackId: string) => {
-      if (!selected_playlist) return;
-      const track = selected_playlist.tracks.find((t) => t.id === trackId);
-      if (!track) return;
-
-      const el = audioRef.current;
-      if (!el) return;
-
-      const clickedCurrent = currentTrackId === trackId;
-
-      // Toggle if same track
-      if (clickedCurrent) {
-        if (el.paused) {
-          await el.play();
-        } else {
-          el.pause();
-        }
-        return;
-      }
-
-      // New track
-      setCurrentTrackId(trackId);
-      el.src = track.audio_url;
-      el.currentTime = 0;
-      await el.play();
-    },
-    [selected_playlist, currentTrackId]
-  );
-
-  // When currentTrack changes, sync the <audio> src
-  React.useEffect(() => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (!currentTrack?.audio_url) return;
-
-    // Only update src if different
-    if (el.src !== currentTrack.audio_url) {
-      el.src = currentTrack.audio_url;
-      el.currentTime = 0;
-
-      // If user had been playing, keep playing
-      if (isPlaying) {
-        el.play().catch(() => { });
-      }
-    }
-  }, [currentTrack?.audio_url]); // (intentionally not including isPlaying to avoid loops)
 
 
   return (
@@ -179,12 +106,11 @@ export default function PlaylistsRoute() {
                 ) : (
                   <ul className="mt-4 space-y-2">
                     {playlists.map((playlist) => {
-                      const is_active = playlist.id === selectedPlaylistId;
                       return (
                         <PlaylistComponent
                           {...playlist}
                           key={playlist.id}
-                          is_active={is_active}
+                          isActive={playlist.id === selectedPlaylistId}
                           onClick={(id) => setSelectedPlaylistId(id)}
                         />
                       );
@@ -244,7 +170,6 @@ export default function PlaylistsRoute() {
                         key={track.id}
                         {...track}
                         isActive={track.id === currentTrackId}
-                        isPlaying={isPlaying}
                         onRowClick={(id) => setCurrentTrackId(id)}
                       />
                     ))}

@@ -8,7 +8,6 @@ export type PlaylistTrackProps = {
 
   // NEW:
   isActive?: boolean;
-  isPlaying?: boolean;
   onRowClick?: (trackId: string) => void;
 };
 
@@ -20,7 +19,6 @@ export function PlaylistTrackComponent({
   duration,
   onRowClick,
   isActive,
-  isPlaying,
 }: PlaylistTrackProps) {
   return (
     <div
