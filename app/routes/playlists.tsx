@@ -197,6 +197,15 @@ export default function PlaylistsRoute() {
 
           {/* Content */}
           <section className="col-span-12 md:col-span-8 lg:col-span-9">
+            {/* ✅ Player row comes first */}
+            <AudioPlayer
+              title={currentTrack?.title}
+              artist={currentTrack?.artist_name}
+              artwork={currentTrack?.art_work_url}
+              audioUrl={currentTrack?.audio_url}
+              audioRef={audioRef as React.RefObject<HTMLAudioElement>}
+            />
+            <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 opacity-60" />
             <div className="rounded-3xl bg-white p-2">
               <div className="px-6 pt-4">
                 <div className="flex flex-wrap items-baseline gap-3">
@@ -229,16 +238,6 @@ export default function PlaylistsRoute() {
                   </div>
                 ) : (
                   <>
-                    {/* ✅ Player row comes first */}
-                    <AudioPlayer
-                      title={currentTrack?.title}
-                      artist={currentTrack?.artist_name}
-                      artwork={currentTrack?.art_work_url}
-                      audioUrl={currentTrack?.audio_url}
-                      audioRef={audioRef as React.RefObject<HTMLAudioElement>}
-                    />
-                    <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 mb-4 opacity-60" />
-
                     {/* Tracks */}
                     {selected_playlist.tracks.map((track) => (
                       <PlaylistTrackComponent
