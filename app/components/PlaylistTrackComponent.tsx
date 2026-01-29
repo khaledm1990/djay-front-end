@@ -9,7 +9,6 @@ export type PlaylistTrackProps = {
   // NEW:
   isActive?: boolean;
   isPlaying?: boolean;
-  onPlayClick?: (trackId: string) => void;
   onRowClick?: (trackId: string) => void;
 };
 
@@ -19,7 +18,6 @@ export function PlaylistTrackComponent({
   artist_name,
   art_work_url,
   duration,
-  onPlayClick,
   onRowClick,
   isActive,
   isPlaying,

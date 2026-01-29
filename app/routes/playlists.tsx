@@ -245,7 +245,6 @@ export default function PlaylistsRoute() {
                         {...track}
                         isActive={track.id === currentTrackId}
                         isPlaying={isPlaying}
-                        onPlayClick={playTrackById}
                         onRowClick={(id) => setCurrentTrackId(id)}
                       />
                     ))}
