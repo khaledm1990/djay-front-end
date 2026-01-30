@@ -121,7 +121,7 @@ export default function PlaylistsRoute() {
                   ) : playlists.length === 0 ? (
                     <p className="text-sm text-gray-500 dark:text-gray-400">No matches.</p>
                   ) : (
-                    <ul className="space-y-2">
+                    <ul className="space-y-2 mt-2 pl-1">
                       {playlists.map((playlist) => (
                         <PlaylistComponent
                           {...playlist}
@@ -148,7 +148,8 @@ export default function PlaylistsRoute() {
               audioRef={audioRef as React.RefObject<HTMLAudioElement>}
             />
 
-            <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 opacity-60 dark:from-orange-900 dark:via-pink-900 dark:to-purple-900" />
+            <div className="h-px mb-3 mt-3 bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 opacity-60 dark:from-orange-900 dark:via-pink-900 dark:to-purple-900" />
+
 
             <div className="rounded-3xl bg-white p-2 flex-1 min-h-0 flex flex-col dark:bg-gray-900">
               <div className="px-6 pt-4">
@@ -182,7 +183,7 @@ export default function PlaylistsRoute() {
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-4">
                     {selected_playlist.tracks.map((track) => (
                       <PlaylistTrackComponent
                         key={track.id}

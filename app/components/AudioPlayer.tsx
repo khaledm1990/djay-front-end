@@ -10,7 +10,6 @@ export function AudioPlayer({ title, artist, artwork, audioUrl, audioRef }: Play
   return (
     <div
       className="
-          mb-6
           rounded-3xl
           bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50
           dark:from-orange-950 dark:via-pink-950 dark:to-purple-950
