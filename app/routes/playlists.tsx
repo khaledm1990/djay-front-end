@@ -14,17 +14,29 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function PlaylistsRoute() {
-
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const [error, setError] = React.useState<string | null>(null);
   const [playlistsResponseData, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
+  const [theme, setTheme] = React.useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    const stored = window.localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
 
 
   const [currentTrackId, setCurrentTrackId] = React.useState<string | null>(null);
   const [currentTrack, setCurrentTrack] = React.useState<TrackType | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    window.localStorage.setItem("theme", theme);
+  }, [theme]);
 
 
   React.useEffect(() => {
@@ -83,28 +95,37 @@ export default function PlaylistsRoute() {
   }, [currentTrack?.audio_url]);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       <div className="mx-auto max-w-[1200px] px-4 py-8">
         {error ? (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
             {error}
           </div>
         ) : null}
 
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6 md:h-[calc(100vh-2rem)] md:min-h-0">
           {/* Sidebar */}
-          <aside className="col-span-12 md:col-span-4 lg:col-span-3">
-            <div className="rounded-3xl bg-gray-50 p-6">
+          <aside className="col-span-12 md:col-span-4 lg:col-span-3 h-full min-h-0">
+            <div className="rounded-3xl bg-gray-50 p-6 h-full min-h-0 flex flex-col dark:bg-gray-900 dark:ring-1 dark:ring-gray-800">
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-full bg-orange-400" />
                 <span className="text-2xl font-semibold tracking-tight">djay</span>
+                <button
+                  type="button"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  aria-label="Toggle theme"
+                  aria-pressed={theme === "dark"}
+                  className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-100 dark:bg-gray-950 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-900"
+                >
+                  <span className="text-sm">{theme === "dark" ? "☀️" : "🌙"}</span>
+                </button>
               </div>
 
               <div className="mt-6">
-                <div className="flex items-center gap-3 rounded-full bg-white px-4 py-3 ring-1 ring-gray-200">
-                  <span className="text-gray-400">🔎</span>
+                <div className="flex items-center gap-3 rounded-full bg-white px-4 py-3 ring-1 ring-gray-200 dark:bg-gray-950 dark:ring-gray-700">
+                  <span className="text-gray-400 dark:text-gray-500">🔎</span>
                   <input
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500"
                     placeholder="Search"
                     aria-label="Search"
                     value={query}
@@ -113,33 +134,35 @@ export default function PlaylistsRoute() {
                 </div>
               </div>
 
-              <div className="mt-8">
-                <h2 className="text-sm font-semibold text-gray-700">Playlists</h2>
+              <div className="mt-8 flex-1 min-h-0 flex flex-col">
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Playlists</h2>
 
-                {!playlistsResponseData ? (
-                  <p className="mt-4 text-sm text-gray-500">Loading…</p>
-                ) : playlists.length === 0 ? (
-                  <p className="mt-4 text-sm text-gray-500">No matches.</p>
-                ) : (
-                  <ul className="mt-4 space-y-2">
-                    {playlists.map((playlist) => {
-                      return (
+                {/* Scroll container */}
+                <div className="mt-4 flex-1 min-h-0 overflow-y-auto pr-1 max-h-[40vh] md:max-h-none">
+                  {!playlistsResponseData ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+                  ) : playlists.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No matches.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {playlists.map((playlist) => (
                         <PlaylistComponent
                           {...playlist}
                           key={playlist.id}
                           isActive={playlist.id === selectedPlaylistId}
                           onClick={(id) => setSelectedPlaylistId(id)}
                         />
-                      );
-                    })}
-                  </ul>
-                )}
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
           </aside>
 
           {/* Content */}
-          <section className="col-span-12 md:col-span-8 lg:col-span-9">
+          <section className="col-span-12 md:col-span-8 lg:col-span-9 h-full min-h-0 flex flex-col">
+            {/* Keep player at top, tracks area takes remaining height */}
             <AudioPlayer
               title={currentTrack?.title}
               artist={currentTrack?.artist_name}
@@ -147,8 +170,10 @@ export default function PlaylistsRoute() {
               audioUrl={currentTrack?.audio_url}
               audioRef={audioRef as React.RefObject<HTMLAudioElement>}
             />
-            <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 opacity-60" />
-            <div className="rounded-3xl bg-white p-2">
+
+            <div className="h-px bg-gradient-to-r from-orange-200 via-pink-200 to-purple-200 opacity-60 dark:from-orange-900 dark:via-pink-900 dark:to-purple-900" />
+
+            <div className="rounded-3xl bg-white p-2 flex-1 min-h-0 flex flex-col dark:bg-gray-900">
               <div className="px-6 pt-4">
                 <div className="flex flex-wrap items-baseline gap-3">
                   <h1 className="text-3xl font-semibold tracking-tight">
@@ -157,45 +182,45 @@ export default function PlaylistsRoute() {
 
                   {playlistsResponseData ? (
                     <>
-                      <p className="text-sm text-gray-500">{selected_playlist?.tracks_count_text}</p>
-                      <span className="text-gray-300">|</span>
-                      <p className="text-sm text-gray-500">{selected_playlist?.total_duration_text}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{selected_playlist?.tracks_count_text}</p>
+                      <span className="text-gray-300 dark:text-gray-600">|</span>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{selected_playlist?.total_duration_text}</p>
                     </>
                   ) : null}
                 </div>
 
-                <div className="mt-6 grid grid-cols-12 px-2 text-xs font-semibold text-gray-500">
+                <div className="mt-6 grid grid-cols-12 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
                   <div className="col-span-7">Title</div>
                   <div className="col-span-3">Artist</div>
                   <div className="col-span-2 text-right">Time</div>
                 </div>
               </div>
 
-              <div className="mt-3 space-y-2 px-4 pb-6">
+              {/* Scroll container */}
+              <div className="mt-3 flex-1 min-h-0 overflow-y-auto px-4 pb-6 pr-1 max-h-[50vh] md:max-h-none">
                 {!selected_playlist ? (
-                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">Loading…</div>
+                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600 dark:bg-gray-950 dark:text-gray-300">Loading…</div>
                 ) : selected_playlist.tracks.length === 0 ? (
-                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600">
+                  <div className="rounded-2xl bg-gray-50 p-6 text-sm text-gray-600 dark:bg-gray-950 dark:text-gray-300">
                     No tracks in this playlist yet.
                   </div>
                 ) : (
-                  <>
-                    {
-                      selected_playlist.tracks.map((track) => (
-                        <PlaylistTrackComponent
-                          key={track.id}
-                          {...track}
-                          isActive={track.id === currentTrackId}
-                          onRowClick={() => onTrackClick(track)}
-                        />
-                      ))
-                    }
-                  </>
+                  <div className="space-y-2">
+                    {selected_playlist.tracks.map((track) => (
+                      <PlaylistTrackComponent
+                        key={track.id}
+                        {...track}
+                        isActive={track.id === currentTrackId}
+                        onRowClick={() => onTrackClick(track)}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
           </section>
         </div>
+
       </div>
     </main>
   );
