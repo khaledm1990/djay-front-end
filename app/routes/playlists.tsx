@@ -19,25 +19,11 @@ export default function PlaylistsRoute() {
   const [playlistsResponseData, setPlaylistsData] = React.useState<PlaylistsResponse | null>(null);
   const [selectedPlaylistId, setSelectedPlaylistId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
-  const [theme, setTheme] = React.useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    const stored = window.localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
 
 
   const [currentTrackId, setCurrentTrackId] = React.useState<string | null>(null);
   const [currentTrack, setCurrentTrack] = React.useState<TrackType | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
-
-  React.useEffect(() => {
-    if (typeof document === "undefined") return;
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
-
 
   React.useEffect(() => {
     const ac = new AbortController();
@@ -110,15 +96,6 @@ export default function PlaylistsRoute() {
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-full bg-orange-400" />
                 <span className="text-2xl font-semibold tracking-tight">djay</span>
-                <button
-                  type="button"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  aria-label="Toggle theme"
-                  aria-pressed={theme === "dark"}
-                  className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-100 dark:bg-gray-950 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-900"
-                >
-                  <span className="text-sm">{theme === "dark" ? "☀️" : "🌙"}</span>
-                </button>
               </div>
 
               <div className="mt-6">
