@@ -27,7 +27,7 @@ export default function PlaylistsRoute() {
 
   React.useEffect(() => {
     const ac = new AbortController();
-
+    // # TODO refactore this fetch logic into an API client
     (async () => {
       try {
         setError(null);
@@ -55,10 +55,7 @@ export default function PlaylistsRoute() {
     return playlistsResponseData.playlists.filter((p) => p.name.toLowerCase().includes(q));
   }, [playlistsResponseData, query]);
 
-  const selected_playlist =
-    playlists.find((p) => p.id === selectedPlaylistId) ??
-    playlists[0] ??
-    null;
+  const selected_playlist = playlists.find((p) => p.id === selectedPlaylistId) ?? playlists[0] ?? null;
 
   React.useEffect(() => {
     if (!playlistsResponseData) return;
