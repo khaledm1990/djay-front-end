@@ -27,6 +27,14 @@ npm run dev
 
 The app will be available at `http://localhost:5173`.
 
+## Dev setup script
+
+Run the setup script (checks for Node/npm, installs deps, then starts dev):
+
+```bash
+bash dev-setup.sh
+```
+
 
 ## Typecheck
 
