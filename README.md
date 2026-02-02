@@ -7,33 +7,16 @@ Frontend for the djay service, built with React Router and Vite.
 - Node.js 20+ (Dockerfile uses Node 20)
 - npm (ships with Node)
 
-## Setup
-
-Install dependencies:
-
-```bash
-npm ci
-```
-
-If you need environment variables, create a `.env` file in the project root (check with the team for required keys).
-
-## Development
-
-Run the dev server:
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:5173`.
 
 ## Dev setup script
+Run the Backend server locally  by folowing the instraction [here](https://github.com/khaledm1990/djay-api?tab=readme-ov-file#quick-start)
 
 Run the setup script (checks for Node/npm, installs deps, then starts dev):
 
 ```bash
 bash dev-setup.sh
 ```
+The app will be available at `http://localhost:5173`.
 
 
 ## Typecheck
@@ -42,8 +25,11 @@ bash dev-setup.sh
 npm run typecheck
 ```
 
-## Scripts
-
-- `npm run dev` — start the dev server
-
 Desing
+
+
+## Light Them
+![Screenshot](doc/design/light_them.png)
+
+## Dark Them
+![Screenshot](doc/design/dark_them.png)
