@@ -1,8 +1,12 @@
-## Demo
+## Demo & Setup
 
 https://drive.google.com/file/d/1GO4JcT0ftgelh8Iz5xO13nPYLlZP1DXK/view?usp=sharing
 
-# djay-front-end
+## Genral OverView 
+
+<img width="501" height="575" alt="Screenshot 2026-02-05 at 00 14 28" src="https://github.com/user-attachments/assets/b6096021-facc-443a-ad7c-6b26f2b7c115" />
+
+## djay-front-end
 
 Frontend for the djay service, built with React Router and Vite.
 
